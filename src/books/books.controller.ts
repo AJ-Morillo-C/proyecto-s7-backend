@@ -18,6 +18,7 @@ import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PublicAccess } from "src/auth/decorators/public.decorator";
 import { Response } from "express";
+import { AllApiResponse, GroupedApiResponse } from "src/common/interfaces/response-api.interface";
 
 @Controller("books")
 export class BooksController {
@@ -28,6 +29,24 @@ export class BooksController {
   async create(@Body() createBookDto: CreateBookDto, @UploadedFile() file: Express.Multer.File) {
     const newBook = await this.booksService.create(createBookDto, file);
     return newBook;
+  }
+  @PublicAccess()
+  @Get("top-viewed")
+  async getTopViewed(@Query("limit") limit?: string): Promise<AllApiResponse<any>> {
+    const parsedLimit = parseInt(limit || "5", 10);
+    return this.booksService.findTopViewed(parsedLimit);
+  }
+  @PublicAccess()
+  @Get("top-by-category")
+  async getTopBooksByCategory(): Promise<GroupedApiResponse<any>> {
+    return this.booksService.findTopBooksGroupedByCategory();
+  }
+
+  @PublicAccess()
+  @Get("/top-downloaded")
+  async getTopDownloaded(@Query("limit") limit?: string): Promise<AllApiResponse<any>> {
+    const parsedLimit = parseInt(limit || "5", 10);
+    return this.booksService.findTopDownloaded(parsedLimit);
   }
 
   @PublicAccess()

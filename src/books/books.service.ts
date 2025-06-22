@@ -6,7 +6,7 @@ import { BookEntity } from "./entities/book.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ManagerError } from "src/common/errors/manager.error";
 import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { AllApiResponse, OneApiResponse } from "src/common/interfaces/response-api.interface";
+import { AllApiResponse, OneApiResponse, GroupedApiResponse } from "src/common/interfaces/response-api.interface";
 import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 
 @Injectable()
@@ -15,7 +15,7 @@ export class BooksService {
     @InjectRepository(BookEntity)
     private readonly bookRepository: Repository<BookEntity>,
     private readonly cloudinaryService: CloudinaryService
-  ) { }
+  ) {}
 
   async create(createBookDto: CreateBookDto, file: Express.Multer.File): Promise<BookEntity> {
     try {
@@ -270,6 +270,133 @@ export class BooksService {
           error: null,
         },
         data: mappedBook,
+      };
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
+  async findTopViewed(limit: number = 5): Promise<AllApiResponse<any>> {
+    try {
+      const books = await this.bookRepository.find({
+        where: { isActive: true },
+        order: { views: "DESC" },
+        take: limit,
+        relations: ["author", "editorial", "gender"],
+      });
+
+      const mappedBooks = books.map((book) => ({
+        id: book.id,
+        title: book.title,
+        isbn: book.isbn,
+        author: book.author?.authorName,
+        editorial: book.editorial?.editorialName,
+        gender: book.gender?.genderName,
+        publicationDate: book.publicationDate,
+        synopsis: book.synopsis,
+        file: book.file,
+        views: book.views,
+        downloads: book.downloads,
+        averageRating: book.averageRating,
+        isActive: book.isActive,
+        createdAt: book.createdAt,
+        updatedAt: book.updatedAt,
+      }));
+
+      return {
+        status: {
+          statusMsg: "ACCEPTED",
+          statusCode: 200,
+          error: null,
+        },
+        meta: {
+          page: 1,
+          limit,
+          lastPage: 1,
+          total: mappedBooks.length,
+        },
+        data: mappedBooks,
+      };
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
+
+  async findTopDownloaded(limit: number = 5): Promise<AllApiResponse<any>> {
+    try {
+      const books = await this.bookRepository.find({
+        where: { isActive: true },
+        order: { downloads: "DESC" },
+        take: limit,
+        relations: ["author", "editorial", "gender"],
+      });
+
+      const mappedBooks = books.map((book) => ({
+        id: book.id,
+        title: book.title,
+        isbn: book.isbn,
+        author: book.author?.authorName,
+        editorial: book.editorial?.editorialName,
+        gender: book.gender?.genderName,
+        publicationDate: book.publicationDate,
+        synopsis: book.synopsis,
+        file: book.file,
+        views: book.views,
+        downloads: book.downloads,
+        averageRating: book.averageRating,
+        isActive: book.isActive,
+        createdAt: book.createdAt,
+        updatedAt: book.updatedAt,
+      }));
+
+      return {
+        status: {
+          statusMsg: "ACCEPTED",
+          statusCode: 200,
+          error: null,
+        },
+        meta: {
+          page: 1,
+          limit,
+          lastPage: 1,
+          total: mappedBooks.length,
+        },
+        data: mappedBooks,
+      };
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
+  async findTopBooksGroupedByCategory(): Promise<GroupedApiResponse<any>> {
+    try {
+      const allBooks = await this.bookRepository
+        .createQueryBuilder("book")
+        .leftJoinAndSelect("book.gender", "gender")
+        .leftJoinAndSelect("book.author", "author")
+        .leftJoinAndSelect("book.editorial", "editorial")
+        .where("book.isActive = true")
+        .orderBy("book.createdAt", "DESC")
+        .getMany();
+
+      const grouped = allBooks.reduce(
+        (acc, book) => {
+          const category = book.gender?.genderName || "Sin categoría";
+          if (!acc[category]) acc[category] = [];
+          if (acc[category].length < 6) acc[category].push(book);
+          return acc;
+        },
+        {} as Record<string, any[]>
+      );
+
+      return {
+        status: {
+          statusMsg: "ACCEPTED",
+          statusCode: 200,
+          error: null,
+        },
+        meta: {
+          totalCategories: Object.keys(grouped).length,
+        },
+        data: grouped,
       };
     } catch (error) {
       ManagerError.createSignatureError(error.message);

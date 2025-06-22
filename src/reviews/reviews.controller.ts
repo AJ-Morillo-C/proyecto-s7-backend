@@ -18,6 +18,11 @@ export class ReviewsController {
     return this.reviewsService.findAll(paginationDto);
   }
 
+  @Get("/search")
+  findAllForReviews(@Query() paginationDto: PaginationDto) {
+    return this.reviewsService.findAllForReviews(paginationDto);
+  }
+
   @Get("filter")
   findWithFilters(
     @Query("userId") userId: string,
