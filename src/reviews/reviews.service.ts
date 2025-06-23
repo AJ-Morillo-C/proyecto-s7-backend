@@ -134,6 +134,55 @@ export class ReviewsService {
       ManagerError.createSignatureError(error.message);
     }
   }
+  async findAllForReviews(paginationDto: PaginationDto & { search?: string }): Promise<AllApiResponse<ReviewEntity>> {
+    const { limit, page, bookId, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    try {
+      const query = this.reviewsRepository
+        .createQueryBuilder("review")
+        .where("review.isActive = :isActive", { isActive: true });
+
+      if (bookId) {
+        query.andWhere("review.bookId = :bookId", { bookId });
+      }
+
+      // Agregar joins para user y book para poder filtrar y devolver relaciones
+      query.leftJoinAndSelect("review.user", "user");
+      query.leftJoinAndSelect("review.book", "book");
+
+      if (search) {
+        query.andWhere("(review.comment ILIKE :search OR user.name ILIKE :search OR book.title ILIKE :search)", {
+          search: `%${search}%`,
+        });
+      }
+
+      // Obtener total de elementos con filtro aplicado
+      const total = await query.getCount();
+
+      // Obtener datos paginados
+      const data = await query.take(limit).skip(skip).orderBy("review.createdAt", "DESC").getMany();
+
+      const lastPage = Math.ceil(total / limit);
+
+      return {
+        status: {
+          statusMsg: "ACCEPTED",
+          statusCode: 200,
+          error: null,
+        },
+        meta: {
+          page,
+          limit,
+          lastPage,
+          total,
+        },
+        data,
+      };
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
 
   async update(id: string, updateReviewDto: UpdateReviewDto): Promise<ReviewEntity> {
     try {

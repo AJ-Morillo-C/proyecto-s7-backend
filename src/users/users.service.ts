@@ -115,6 +115,37 @@ export class UsersService {
       });
     }
   }
+  async findAllForUsers(paginationDto: PaginationDto & { search?: string }): Promise<AllApiResponse<UserEntity>> {
+    const { limit, page, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const query = this.userRepository.createQueryBuilder("user").where("user.isActive = true");
+
+    if (search) {
+      query.andWhere("(LOWER(user.name) LIKE :search OR LOWER(user.email) LIKE :search)", {
+        search: `%${search.toLowerCase()}%`,
+      });
+    }
+
+    const [data, total] = await Promise.all([query.take(limit).skip(skip).getMany(), query.getCount()]);
+
+    const lastPage = Math.ceil(total / limit);
+
+    return {
+      status: {
+        statusMsg: "ACCEPTED",
+        statusCode: 200,
+        error: null,
+      },
+      meta: {
+        page,
+        limit,
+        lastPage,
+        total,
+      },
+      data,
+    };
+  }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UpdateResult> {
     try {

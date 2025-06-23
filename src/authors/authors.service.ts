@@ -111,6 +111,37 @@ export class AuthorsService {
       ManagerError.createSignatureError(error.message);
     }
   }
+  async findTopAuthors(
+    limit: number = 5
+  ): Promise<Array<{ id: string; authorName: string; biography: string; photo: string; booksCount: number }>> {
+    try {
+      const authorsWithCount = await this.authorsRepository
+        .createQueryBuilder("author")
+        .leftJoin("author.books", "book")
+        .where("author.isActive = true")
+        .select([
+          "author.id AS id",
+          "author.authorName AS authorName",
+          "author.biography AS biography",
+          "author.photo AS photo",
+          "COUNT(book.id)::int AS booksCount",
+        ])
+        .groupBy("author.id")
+        .orderBy("booksCount", "DESC")
+        .limit(limit)
+        .getRawMany();
+
+      return authorsWithCount.map((raw) => ({
+        id: raw.id,
+        authorName: raw.authorname, // cuidado con el casing
+        biography: raw.biography,
+        photo: raw.photo,
+        booksCount: raw.bookscount, // cuidado: revisar aquí el nombre exacto en consola
+      }));
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
 
   async findOne(id: string): Promise<OneApiResponse<AuthorEntity>> {
     try {

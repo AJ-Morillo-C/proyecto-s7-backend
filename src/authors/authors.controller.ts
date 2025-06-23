@@ -36,6 +36,13 @@ export class AuthorsController {
   async searchAuthors(@Query() paginationDto: PaginationDto & { search?: string }) {
     return this.authorsService.searchAuthors(paginationDto);
   }
+  @PublicAccess()
+  @Get("/top")
+  async getTopAuthors(@Query("limit") limit?: string) {
+    const parsedLimit = parseInt(limit || "5", 10);
+    const authors = await this.authorsService.findTopAuthors(parsedLimit);
+    return authors;
+  }
 
   @PublicAccess()
   @Get(":id")

@@ -1,4 +1,4 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus } from "@nestjs/common";
 
 interface Metadata {
   page: number;
@@ -22,4 +22,11 @@ export interface AllApiResponse<T> {
   meta: Metadata;
   status: Status;
   data: T[];
+}
+export interface GroupedApiResponse<T> {
+  status: Status;
+  meta: {
+    totalCategories: number;
+  };
+  data: Record<string, T[]>;
 }
