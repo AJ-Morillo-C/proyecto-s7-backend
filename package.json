@@ -1,7 +1,7 @@
 {
   "name": "proyecto-s7-backend",
-  "version": "0.1.0",
-  "description": "Backend para plataforma de gestión de libros digitales desarrollado con NestJS, TypeORM y PostgreSQL. Incluye autenticación JWT, gestión de usuarios, libros, autores, editoriales y géneros, sistema de reseñas y favoritos, e integración con Cloudinary para almacenamiento de archivos PDF. API RESTful con arquitectura modular y escalable.",
+  "version": "1.0.0",
+  "description": "Backend API para una plataforma completa de gestión y distribución de libros digitales, desarrollada con NestJS, TypeORM y PostgreSQL. Sistema modular con autenticación JWT, gestión de contenido, interacciones sociales y almacenamiento en la nube.",
   "author": "Ali Morillo",
   "private": true,
   "license": "UNLICENSED",
