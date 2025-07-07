@@ -21,7 +21,7 @@ dotenv.config();
           },
         },
         defaults: {
-          from: `"No Reply" <${process.env.MAIL_FROM_EMAIL}>`,
+          from: `"Team UniBooks" <${process.env.MAIL_FROM_EMAIL}>`,
         },
         template: {
           dir: join(__dirname, "templates"),

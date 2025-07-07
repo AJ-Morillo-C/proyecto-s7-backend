@@ -68,6 +68,7 @@ export class BooksController {
   }
 
   @Patch(":id")
+  @UseInterceptors(FileInterceptor("file"))
   async update(
     @Param("id") id: string,
     @Body() updateBookDto: UpdateBookDto,

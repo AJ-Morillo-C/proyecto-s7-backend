@@ -119,14 +119,6 @@ export class AuthService {
     try {
       const { email } = forgotPasswordDto;
 
-      const { canRequest, message } = await this.usersService.canRequestPasswordReset(email);
-      if (!canRequest) {
-        throw new ManagerError({
-          type: "TOO_MANY_REQUESTS",
-          message: message || "Too many recovery attempts. Please wait before trying again",
-        });
-      }
-
       const user = await this.usersService.findOneByEmail(email);
       if (!user) {
         return { message: "If an account with that email exists, a reset link has been sent" };
