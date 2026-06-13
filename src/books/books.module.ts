@@ -3,7 +3,7 @@ import { BooksService } from "./books.service";
 import { BooksController } from "./books.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BookEntity } from "./entities/book.entity";
-import { CloudinaryModule } from "src/cloudinary/cloudinary.module";
+import { CloudinaryModule } from "../cloudinary/cloudinary.module";
 
 @Module({
   controllers: [BooksController],

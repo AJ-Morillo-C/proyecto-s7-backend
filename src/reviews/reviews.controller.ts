@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestj
 import { ReviewsService } from "./reviews.service";
 import { CreateReviewDto } from "./dto/create-review.dto";
 import { UpdateReviewDto } from "./dto/update-review.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 
 @Controller("reviews")
 export class ReviewsController {

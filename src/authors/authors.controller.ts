@@ -13,9 +13,9 @@ import {
 import { AuthorsService } from "./authors.service";
 import { CreateAuthorDto } from "./dto/create-author.dto";
 import { UpdateAuthorDto } from "./dto/update-author.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { PublicAccess } from "src/auth/decorators/public.decorator";
+import { PublicAccess } from "../auth/decorators/public.decorator";
 
 @Controller("authors")
 export class AuthorsController {

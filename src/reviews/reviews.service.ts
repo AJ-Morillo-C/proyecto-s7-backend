@@ -4,10 +4,10 @@ import { UpdateReviewDto } from "./dto/update-review.dto";
 import { Repository, UpdateResult } from "typeorm";
 import { ReviewEntity } from "./entities/review.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ManagerError } from "src/common/errors/manager.error";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { AllApiResponse, OneApiResponse } from "src/common/interfaces/response-api.interface";
-import { BooksService } from "src/books/books.service";
+import { ManagerError } from "../common/errors/manager.error";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { AllApiResponse, OneApiResponse } from "../common/interfaces/response-api.interface";
+import { BooksService } from "../books/books.service";
 
 @Injectable()
 export class ReviewsService {

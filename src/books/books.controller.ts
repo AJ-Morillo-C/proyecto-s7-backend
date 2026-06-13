@@ -14,11 +14,11 @@ import {
 import { BooksService } from "./books.service";
 import { CreateBookDto } from "./dto/create-book.dto";
 import { UpdateBookDto } from "./dto/update-book.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { PublicAccess } from "src/auth/decorators/public.decorator";
+import { PublicAccess } from "../auth/decorators/public.decorator";
 import { Response } from "express";
-import { AllApiResponse, GroupedApiResponse } from "src/common/interfaces/response-api.interface";
+import { AllApiResponse, GroupedApiResponse } from "../common/interfaces/response-api.interface";
 
 @Controller("books")
 export class BooksController {

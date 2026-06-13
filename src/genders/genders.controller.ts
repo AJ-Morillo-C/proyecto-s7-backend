@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestj
 import { GendersService } from "./genders.service";
 import { CreateGenderDto } from "./dto/create-gender.dto";
 import { UpdateGenderDto } from "./dto/update-gender.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { PublicAccess } from "src/auth/decorators/public.decorator";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { PublicAccess } from "../auth/decorators/public.decorator";
 
 @Controller("genders")
 export class GendersController {

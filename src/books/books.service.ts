@@ -4,10 +4,10 @@ import { UpdateBookDto } from "./dto/update-book.dto";
 import { Repository, UpdateResult } from "typeorm";
 import { BookEntity } from "./entities/book.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ManagerError } from "src/common/errors/manager.error";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { AllApiResponse, OneApiResponse, GroupedApiResponse } from "src/common/interfaces/response-api.interface";
-import { CloudinaryService } from "src/cloudinary/cloudinary.service";
+import { ManagerError } from "../common/errors/manager.error";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { AllApiResponse, OneApiResponse, GroupedApiResponse } from "../common/interfaces/response-api.interface";
+import { CloudinaryService } from "../cloudinary/cloudinary.service";
 
 @Injectable()
 export class BooksService {

@@ -4,9 +4,9 @@ import { UpdateGenderDto } from "./dto/update-gender.dto";
 import { Repository, UpdateResult } from "typeorm";
 import { GenderEntity } from "./entities/gender.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ManagerError } from "src/common/errors/manager.error";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { AllApiResponse, OneApiResponse } from "src/common/interfaces/response-api.interface";
+import { ManagerError } from "../common/errors/manager.error";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { AllApiResponse, OneApiResponse } from "../common/interfaces/response-api.interface";
 
 @Injectable()
 export class GendersService {

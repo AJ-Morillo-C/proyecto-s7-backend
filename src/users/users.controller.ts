@@ -14,9 +14,9 @@ import {
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { PublicAccess } from "src/auth/decorators/public.decorator";
+import { PublicAccess } from "../auth/decorators/public.decorator";
 
 @Controller("users")
 export class UsersController {

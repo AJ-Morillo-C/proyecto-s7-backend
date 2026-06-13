@@ -2,7 +2,7 @@ import { IsEnum, IsOptional, IsDate, IsString } from "class-validator";
 import { Exclude } from "class-transformer";
 import { PartialType } from "@nestjs/mapped-types";
 import { CreateUserDto } from "./create-user.dto";
-import { UserRole } from "src/common/enums/user-role.enum"; // Asegúrate de tener este enum
+import { UserRole } from "../../common/enums/user-role.enum"; 
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()

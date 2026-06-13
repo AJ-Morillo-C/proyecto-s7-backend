@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestj
 import { FavoritesService } from "./favorites.service";
 import { CreateFavoriteDto } from "./dto/create-favorite.dto";
 import { UpdateFavoriteDto } from "./dto/update-favorite.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 import { Req } from "@nestjs/common";
 import { Request } from "express";
 

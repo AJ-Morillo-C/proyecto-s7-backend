@@ -4,9 +4,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { FavoriteEntity } from "./entities/favorite.entity";
 import { CreateFavoriteDto } from "./dto/create-favorite.dto";
 import { UpdateFavoriteDto } from "./dto/update-favorite.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
-import { AllApiResponse, OneApiResponse } from "src/common/interfaces/response-api.interface";
-import { ManagerError } from "src/common/errors/manager.error";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { AllApiResponse, OneApiResponse } from "../common/interfaces/response-api.interface";
+import { ManagerError } from "../common/errors/manager.error";
 import { ILike } from "typeorm";
 
 @Injectable()

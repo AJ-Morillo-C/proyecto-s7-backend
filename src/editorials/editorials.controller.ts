@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestj
 import { EditorialsService } from "./editorials.service";
 import { CreateEditorialDto } from "./dto/create-editorial.dto";
 import { UpdateEditorialDto } from "./dto/update-editorial.dto";
-import { PaginationDto } from "src/common/dtos/pagination/pagination.dto";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 
 @Controller("editorials")
 export class EditorialsController {

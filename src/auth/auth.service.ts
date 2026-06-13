@@ -4,7 +4,7 @@ import { RegisterAuthDto } from "./dto/register-auth.dto";
 import { LoginAuthDto } from "./dto/login-auth.dto";
 import { UsersService } from "../users/users.service";
 import { ManagerError } from "./../common/errors/manager.error";
-import { OmitPassword } from "src/common/types/users/omit-password.user";
+import { OmitPassword } from "../common/types/users/omit-password.user";
 import * as bcrypt from "bcrypt";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { MailerService } from "@nestjs-modules/mailer";
