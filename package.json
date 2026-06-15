@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "clean": "node -e \"const fs=require('fs');['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'].forEach(p=>{try{fs.rmSync(p,{force:true,recursive:true})}catch(e){}});\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "set NODE_ENV=development && nest start --watch",
@@ -63,7 +64,7 @@
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.2",
     "@types/multer": "^1.4.12",
-    "@types/node": "^20.17.10",
+    "@types/node": "^20.19.43",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
