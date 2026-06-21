@@ -30,6 +30,12 @@ export class BooksController {
     const newBook = await this.booksService.create(createBookDto, file);
     return newBook;
   }
+
+  @Post("analyze")
+  @UseInterceptors(FileInterceptor("file"))
+  async analyze(@UploadedFile() file: Express.Multer.File) {
+    return this.booksService.analyzePdf(file);
+  }
   @PublicAccess()
   @Get("top-viewed")
   async getTopViewed(@Query("limit") limit?: string): Promise<AllApiResponse<any>> {

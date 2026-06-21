@@ -2,8 +2,8 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateBookDto {
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsNumber()
   @IsOptional()

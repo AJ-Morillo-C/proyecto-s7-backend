@@ -1,20 +1,26 @@
 import { Injectable } from "@nestjs/common";
 import { CreateBookDto } from "./dto/create-book.dto";
 import { UpdateBookDto } from "./dto/update-book.dto";
-import { Repository, UpdateResult } from "typeorm";
+import { Repository, UpdateResult, ILike } from "typeorm";
 import { BookEntity } from "./entities/book.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ManagerError } from "../common/errors/manager.error";
 import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
 import { AllApiResponse, OneApiResponse, GroupedApiResponse } from "../common/interfaces/response-api.interface";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
+import { BooksUploadService } from "./books-upload.service";
+import { BookMetadata } from "../ai-metadata/ai-metadata.service";
+import { AuthorEntity } from "../authors/entities/author.entity";
+import { EditorialEntity } from "../editorials/entities/editorial.entity";
+import { GenderEntity } from "../genders/entities/gender.entity";
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectRepository(BookEntity)
     private readonly bookRepository: Repository<BookEntity>,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly booksUploadService: BooksUploadService
   ) {}
 
   async create(createBookDto: CreateBookDto, file: Express.Multer.File): Promise<BookEntity> {
@@ -25,8 +31,11 @@ export class BooksService {
           message: "File is required!",
         });
       }
+
+      // 1. Subir el archivo directamente a Cloudinary (sin intervención de la IA)
       const uploadedFile = await this.cloudinaryService.uploadFile(file);
 
+      // 2. Mapear los datos del libro y resolver las relaciones a partir del DTO recibido del frontend
       const { author, editorial, gender, ...bookData } = createBookDto;
       const book = this.bookRepository.create({
         ...bookData,
@@ -36,6 +45,7 @@ export class BooksService {
         gender: gender ? { id: gender } : undefined,
       });
 
+      // 3. Guardar en la Base de Datos
       const savedBook = await this.bookRepository.save(book);
       if (!savedBook) {
         throw new ManagerError({
@@ -43,7 +53,12 @@ export class BooksService {
           message: "Book not created!",
         });
       }
-      return savedBook;
+
+      // 4. Retornar el libro con relaciones completas cargadas para la respuesta
+      return await this.bookRepository.findOne({
+        where: { id: savedBook.id },
+        relations: ['author', 'editorial', 'gender']
+      });
     } catch (error) {
       ManagerError.createSignatureError(error.message);
     }
@@ -527,6 +542,14 @@ export class BooksService {
         },
         data: downloadUrl,
       };
+    } catch (error) {
+      ManagerError.createSignatureError(error.message);
+    }
+  }
+
+  async analyzePdf(file: Express.Multer.File): Promise<BookMetadata> {
+    try {
+      return await this.booksUploadService.extractMetadata(file);
     } catch (error) {
       ManagerError.createSignatureError(error.message);
     }
