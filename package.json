@@ -26,6 +26,7 @@
     "m:run": "npm run orm:init migration:run"
   },
   "dependencies": {
+    "@google/genai": "^2.8.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.12",
     "@nestjs/config": "^4.0.2",
@@ -37,6 +38,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "@types/morgan": "^1.9.9",
     "bcrypt": "^5.1.1",
+    "canvas": "^3.2.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cloudinary": "^2.6.0",
@@ -48,6 +50,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^3.11.174",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
@@ -66,6 +70,8 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^20.19.43",
     "@types/passport-jwt": "^4.0.1",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pdfjs-dist": "^2.10.377",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -80,7 +86,7 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.7.3"
   },
   "jest": {
     "moduleFileExtensions": [
