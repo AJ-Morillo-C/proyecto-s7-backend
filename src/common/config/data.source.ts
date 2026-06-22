@@ -2,8 +2,10 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+const env = process.env.NODE_ENV?.trim() || 'development';
+
 ConfigModule.forRoot({
-  envFilePath: `.env.${process.env.NODE_ENV.trim()}`,
+  envFilePath: `.env.${env}`,
 });
 
 const configService = new ConfigService();
