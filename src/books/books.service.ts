@@ -37,12 +37,77 @@ export class BooksService {
 
       // 2. Mapear los datos del libro y resolver las relaciones a partir del DTO recibido del frontend
       const { author, editorial, gender, ...bookData } = createBookDto;
+
+      // Detectar si el string enviado es un UUID válido o un nombre de texto
+      const isUuid = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+      let authorRelation: { id: string } | undefined;
+      if (author && author !== 'string') {
+        if (isUuid(author)) {
+          authorRelation = { id: author };
+        } else {
+          // Si no es un UUID, asumimos que es el nombre del autor
+          let foundAuthor = await this.bookRepository.manager.getRepository(AuthorEntity).findOne({
+            where: { authorName: ILike(`%${author}%`) }
+          });
+          if (!foundAuthor) {
+            foundAuthor = this.bookRepository.manager.getRepository(AuthorEntity).create({
+              authorName: author,
+              biography: 'Biografía autogenerada por el sistema.'
+            });
+            foundAuthor = await this.bookRepository.manager.getRepository(AuthorEntity).save(foundAuthor);
+          }
+          authorRelation = { id: foundAuthor.id };
+        }
+      }
+
+      let editorialRelation: { id: string } | undefined;
+      if (editorial && editorial !== 'string') {
+        if (isUuid(editorial)) {
+          editorialRelation = { id: editorial };
+        } else {
+          // Si no es un UUID, asumimos que es el nombre de la editorial
+          let foundEditorial = await this.bookRepository.manager.getRepository(EditorialEntity).findOne({
+            where: { editorialName: ILike(`%${editorial}%`) }
+          });
+          if (!foundEditorial) {
+            foundEditorial = this.bookRepository.manager.getRepository(EditorialEntity).create({
+              editorialName: editorial,
+              address: 'Dirección no especificada.',
+              phone: '000-000-0000'
+            });
+            foundEditorial = await this.bookRepository.manager.getRepository(EditorialEntity).save(foundEditorial);
+          }
+          editorialRelation = { id: foundEditorial.id };
+        }
+      }
+
+      let genderRelation: { id: string } | undefined;
+      if (gender && gender !== 'string') {
+        if (isUuid(gender)) {
+          genderRelation = { id: gender };
+        } else {
+          // Si no es un UUID, asumimos que es el nombre del género
+          let foundGender = await this.bookRepository.manager.getRepository(GenderEntity).findOne({
+            where: { genderName: ILike(`%${gender}%`) }
+          });
+          if (!foundGender) {
+            foundGender = this.bookRepository.manager.getRepository(GenderEntity).create({
+              genderName: gender,
+              description: 'Género autogenerado por el sistema.'
+            });
+            foundGender = await this.bookRepository.manager.getRepository(GenderEntity).save(foundGender);
+          }
+          genderRelation = { id: foundGender.id };
+        }
+      }
+
       const book = this.bookRepository.create({
         ...bookData,
         file: uploadedFile.secure_url,
-        author: author ? { id: author } : undefined,
-        editorial: editorial ? { id: editorial } : undefined,
-        gender: gender ? { id: gender } : undefined,
+        author: authorRelation,
+        editorial: editorialRelation,
+        gender: genderRelation,
       });
 
       // 3. Guardar en la Base de Datos
