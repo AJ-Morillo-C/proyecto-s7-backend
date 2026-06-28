@@ -339,3 +339,27 @@ Para subida directa de archivos ajenos al flujo estructurado de libros o usuario
 
 * **POST `/cloudinary/upload` [Protegido]**: Subir un archivo genérico (`multipart/form-data` con campo `file`). Retorna la URL segura y metadatos de Cloudinary.
 * **POST `/cloudinary/uploadProfilePhoto` [Protegido]**: Subir foto de perfil genérica (`multipart/form-data` con campo `profilePhoto`).
+
+---
+
+## 🎯 Módulo de Recomendaciones (`/recommendations`)
+
+Sistema de recomendación de libros basado en los gustos y la interacción del usuario, además de listados de tendencias.
+
+### 1. Recomendaciones Personalizadas
+* **Ruta**: `GET /recommendations`
+* **Acceso**: Protegido
+* **Query Params**: `PaginationDto` (`page`, `limit`)
+* **Descripción**: Analiza los libros favoritos y reseñas positivas (>= 4 estrellas) del usuario actual, extrayendo géneros, autores y editoriales preferidos para buscar libros similares que el usuario aún no tenga en sus listas. Los resultados se ordenan por relevancia, visitas y calificación.
+
+### 2. Libros en Tendencia
+* **Ruta**: `GET /recommendations/trending`
+* **Acceso**: **[PÚBLICO]**
+* **Query Params**: `PaginationDto` (`page`, `limit`)
+* **Descripción**: Retorna una lista paginada de los libros más populares ordenados por la suma de visualizaciones y descargas, y como criterio secundario la calificación promedio.
+
+### 3. Libros Similares
+* **Ruta**: `GET /recommendations/similar/:bookId`
+* **Acceso**: **[PÚBLICO]**
+* **Query Params**: `PaginationDto` (`page`, `limit`)
+* **Descripción**: Busca libros que compartan el mismo género, autor o editorial que el libro objetivo especificado por `bookId`. Ordena los resultados por popularidad. Excluye al libro objetivo de los resultados.
