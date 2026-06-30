@@ -1,22 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
-import { createCanvas, Canvas, CanvasRenderingContext2D } from 'canvas';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { createCanvas, Canvas } from '@napi-rs/canvas';
 
 class NodeCanvasFactory {
   create(width: number, height: number) {
     const canvas: Canvas = createCanvas(Math.ceil(width), Math.ceil(height));
-    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    const context = canvas.getContext('2d');
     return { canvas, context };
   }
 
-  reset(canvasAndContext: { canvas: Canvas; context: CanvasRenderingContext2D }) {
+  reset(canvasAndContext: { canvas: Canvas; context: any }) {
     const { canvas, context } = canvasAndContext;
     context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  destroy(canvasAndContext: { canvas: Canvas; context: CanvasRenderingContext2D }) {
+  destroy(canvasAndContext: { canvas: Canvas; context: any }) {
     const { canvas } = canvasAndContext;
-    // node-canvas doesn't need explicit destroy, but clear refs
     // @ts-ignore
     canvas.width = 0;
     // @ts-ignore

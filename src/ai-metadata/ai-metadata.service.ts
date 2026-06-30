@@ -44,7 +44,7 @@ export class AiMetadataService {
       },
       gender: { 
         type: Type.STRING, 
-        description: 'El género o categoría principal del libro (ej. Ficción, Ciencia, Historia, Tecnología, Autoayuda).' 
+        description: 'El género o categoría principal del libro (ej. Programación, Metodología de la Investigación, Matemáticas, Física, Electrónica, Base de Datos, Ficción, Ciencia, Historia, Tecnología, Autoayuda).' 
       },
       synopsis: { 
         type: Type.STRING, 
@@ -64,6 +64,36 @@ export class AiMetadataService {
   }
 
   /**
+   * Helper que envuelve llamadas asíncronas con reintentos y retroceso exponencial (backoff)
+   * para manejar errores temporales del servidor como el 503 (alta demanda) o 429 (límite de peticiones).
+   */
+  private async retry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      const status = error?.status || error?.code;
+      const message = error?.message || '';
+      
+      const isTemporaryError = 
+        status === 503 || 
+        status === 429 || 
+        message.includes('503') || 
+        message.includes('429') ||
+        message.includes('high demand') ||
+        message.includes('UNAVAILABLE');
+
+      if (retries > 0 && isTemporaryError) {
+        this.logger.warn(
+          `La API de Gemini está experimentando alta demanda o límite excedido (${message}). Reintentando en ${delayMs}ms... (Intentos restantes: ${retries})`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        return this.retry(fn, retries - 1, delayMs * 2);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Extrae los metadatos de un texto plano (PDF Nativo)
    */
   async extractFromText(text: string): Promise<BookMetadata> {
@@ -77,15 +107,17 @@ Texto extraído:
 ${text}
 ---`;
 
-      const response = await this.ai.models.generateContent({
-        model: this.modelName,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: this.responseSchema,
-          temperature: 0.1, // temperatura baja para mayor precisión factual
-        },
-      });
+      const response = await this.retry(() =>
+        this.ai.models.generateContent({
+          model: this.modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: this.responseSchema,
+            temperature: 0.1, // temperatura baja para mayor precisión factual
+          },
+        })
+      );
 
       const responseText = response.text;
       if (!responseText) {
@@ -109,23 +141,25 @@ ${text}
 
       const prompt = `Analiza esta imagen que corresponde a la primera página o portada de un libro escaneado. Identifica los metadatos del libro, tales como el título, autor, editorial, fecha de publicación aproximada (si está visible en la portada) y género. Genera una breve sinopsis visual basada en los elementos de la portada o título si no hay suficiente texto legible.`;
 
-      const response = await this.ai.models.generateContent({
-        model: this.modelName,
-        contents: [
-          prompt,
-          {
-            inlineData: {
-              data: imageBuffer.toString('base64'),
-              mimeType: mimeType,
+      const response = await this.retry(() =>
+        this.ai.models.generateContent({
+          model: this.modelName,
+          contents: [
+            prompt,
+            {
+              inlineData: {
+                data: imageBuffer.toString('base64'),
+                mimeType: mimeType,
+              },
             },
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: this.responseSchema,
+            temperature: 0.2,
           },
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: this.responseSchema,
-          temperature: 0.2,
-        },
-      });
+        })
+      );
 
       const responseText = response.text;
       if (!responseText) {
