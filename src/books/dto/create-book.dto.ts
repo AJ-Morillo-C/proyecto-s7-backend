@@ -1,13 +1,23 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class CreateBookDto {
   @IsString()
   @IsOptional()
   title?: string;
 
-  @IsNumber()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === "") return null;
+    if (typeof value === "string") {
+      const cleaned = value.replace(/[- ]/g, "").trim();
+      return cleaned === "" || cleaned === "0" ? null : cleaned;
+    }
+    if (value === 0) return null;
+    return String(value);
+  })
+  @IsString()
   @IsOptional()
-  isbn?: number;
+  isbn?: string | null;
 
   @IsString()
   @IsOptional()

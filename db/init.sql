@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS book (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
     title VARCHAR NOT NULL,
-    isbn NUMERIC UNIQUE,
+    isbn VARCHAR UNIQUE,
     author UUID REFERENCES author(id),
     editorial UUID REFERENCES editorial(id),
     publication_date NUMERIC,

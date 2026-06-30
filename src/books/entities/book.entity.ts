@@ -11,8 +11,8 @@ export class BookEntity extends BaseEntity {
   @Column({ type: "varchar" })
   title: string;
 
-  @Column({ type: "numeric", unique: true })
-  isbn: number;
+  @Column({ type: "varchar", unique: true, nullable: true })
+  isbn: string;
 
   @ManyToOne(() => AuthorEntity, (author) => author.books, { nullable: true })
   @JoinColumn({ name: "author" })

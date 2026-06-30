@@ -4,7 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 export interface BookMetadata {
   title: string;
-  isbn?: number;
+  isbn?: string;
   author?: string;
   editorial?: string;
   publicationDate?: number;
@@ -27,7 +27,7 @@ export class AiMetadataService {
         description: 'El título del libro. Debe ser descriptivo y exacto.' 
       },
       isbn: { 
-        type: Type.INTEGER, 
+        type: Type.STRING, 
         description: 'El número ISBN de 10 o 13 dígitos. Retornar solo el número (sin guiones) o null si no se encuentra.' 
       },
       author: { 

@@ -254,7 +254,7 @@ export class BooksService {
 
       if (searchValue) {
         queryBuilder.andWhere(
-          `(CAST(book.isbn AS TEXT) ILIKE :search
+          `(book.isbn ILIKE :search
     OR LOWER(book.title) ILIKE LOWER(:search)
     OR LOWER(author.authorName) ILIKE LOWER(:search)
     OR LOWER(editorial.editorialName) ILIKE LOWER(:search)
