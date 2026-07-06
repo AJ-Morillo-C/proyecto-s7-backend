@@ -27,6 +27,15 @@ export class CreateBookDto {
   @IsOptional()
   editorial?: string;
 
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === "") return null;
+    if (typeof value === "number") {
+      const cleaned = value.valueOf();
+      return cleaned === undefined || cleaned === 0 ? null : cleaned;
+    }
+    if (value === 0) return null;
+    return String(value);
+  })
   @IsNumber()
   @IsOptional()
   publicationDate?: number;
