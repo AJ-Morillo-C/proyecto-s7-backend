@@ -1,28 +1,42 @@
 BooksController
 http://localhost:3000/books, POST
-http://localhost:3000/books, GET      
-http://localhost:3000/books/:id, GET  
+http://localhost:3000/books, GET
+http://localhost:3000/books/search, GET
+http://localhost:3000/books/analyze, POST
+http://localhost:3000/books/top-viewed, GET
+http://localhost:3000/books/top-by-category, GET
+http://localhost:3000/books/top-downloaded, GET
+http://localhost:3000/books/:id, GET
 http://localhost:3000/books/:id, PATCH
-http://localhost:3000/books/:id, DELETE       
-http://localhost:3000/books/:id/download, POST
+http://localhost:3000/books/:id, DELETE
+http://localhost:3000/books/:id/download, GET
+http://localhost:3000/books/test-parse, POST
 
 UsersController
-http://localhost:3000/users, POST -> registra usuarios
-http://localhost:3000/users, GET 
+http://localhost:3000/users, POST
+http://localhost:3000/users, GET
+http://localhost:3000/users/search, GET
 http://localhost:3000/users/:id, GET
 http://localhost:3000/users/:id, PATCH
 http://localhost:3000/users/:id, DELETE
+http://localhost:3000/users/:id/photo, POST
 
 AuthorsController
 http://localhost:3000/authors, POST
 http://localhost:3000/authors, GET
+http://localhost:3000/authors/search, GET
+http://localhost:3000/authors/top, GET
 http://localhost:3000/authors/:id, GET
+http://localhost:3000/authors/:id/books, GET
 http://localhost:3000/authors/:id, PATCH
+http://localhost:3000/authors/update/:id, PATCH
+http://localhost:3000/authors/:id/photo, POST
 http://localhost:3000/authors/:id, DELETE
 
 EditorialsController
 http://localhost:3000/editorials, POST
 http://localhost:3000/editorials, GET
+http://localhost:3000/editorials/search, GET
 http://localhost:3000/editorials/:id, GET
 http://localhost:3000/editorials/:id, PATCH
 http://localhost:3000/editorials/:id, DELETE
@@ -30,6 +44,8 @@ http://localhost:3000/editorials/:id, DELETE
 GendersController
 http://localhost:3000/genders, POST
 http://localhost:3000/genders, GET
+http://localhost:3000/genders/search, GET
+http://localhost:3000/genders/names, GET
 http://localhost:3000/genders/:id, GET
 http://localhost:3000/genders/:id, PATCH
 http://localhost:3000/genders/:id, DELETE
@@ -37,6 +53,8 @@ http://localhost:3000/genders/:id, DELETE
 ReviewsController
 http://localhost:3000/reviews, POST
 http://localhost:3000/reviews, GET
+http://localhost:3000/reviews/search, GET
+http://localhost:3000/reviews/filter, GET
 http://localhost:3000/reviews/:id, GET
 http://localhost:3000/reviews/:id, PATCH
 http://localhost:3000/reviews/:id, DELETE
@@ -44,14 +62,24 @@ http://localhost:3000/reviews/:id, DELETE
 FavoritesController
 http://localhost:3000/favorites, POST
 http://localhost:3000/favorites, GET
+http://localhost:3000/favorites/Authors, GET
 http://localhost:3000/favorites/:id, GET
 http://localhost:3000/favorites/:id, PATCH
 http://localhost:3000/favorites/:id, DELETE
 
 AuthController
 http://localhost:3000/auth/register, POST -> registra usuarios y retorna el token
-http://localhost:3000/auth/login, POST
-http://localhost:3000/auth/verify, POST
+http://localhost:3000/auth/login, POST -> inicia sesión
+http://localhost:3000/auth/verify, POST -> verifica token activo
+http://localhost:3000/auth/refresh, POST -> renueva el access y refresh token
+http://localhost:3000/auth/profile, GET -> obtiene datos del usuario actual
+http://localhost:3000/auth/change-password, POST -> cambia contraseña estando logueado
+http://localhost:3000/auth/forgot-password, POST -> envía link de recuperación
+http://localhost:3000/auth/reset-password, POST -> restablece contraseña
+
+CloudinaryController
+http://localhost:3000/cloudinary/upload, POST -> subida genérica de archivos
+http://localhost:3000/cloudinary/uploadProfilePhoto, POST -> subida genérica de foto de perfil
 
 docker exec -it book_pg bash
 psql -U ubook -d book -f /docker-entrypoint-initdb.d/init.sql

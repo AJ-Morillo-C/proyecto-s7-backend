@@ -14,6 +14,7 @@ La API cuenta con un sistema de autenticación global basado en **JWT** y un con
    * **Cookie**: En una cookie llamada `access-token` (requiere configurar `credentials: true` en Axios/Fetch).
    * **Header**: En el encabezado HTTP: `Authorization: Bearer <JWT_TOKEN>`.
 4. **Control de Roles**: Aunque existen roles (`ADMIN` y `USER`), las rutas protegidas permiten el acceso a cualquier usuario con token válido, a menos que se restrinja en el futuro. Los administradores tienen acceso sin restricciones a todas las rutas.
+5. **Mecanismo de Refresco (Refresh Token)**: El sistema implementa un flujo de refresh token (con validez de 7 días). El token se puede almacenar en la cookie `refresh-token` o pasarse en el cuerpo de la petición. Sirve para renovar la sesión expirada de forma transparente para el usuario.
 
 ---
 
@@ -50,7 +51,7 @@ Controla el catálogo de libros, la descarga, estadísticas de visualizaciones y
   ```json
   {
     "title": "Título del Libro",
-    "isbn": 9781234567890,
+    "isbn": "9781234567890",
     "author": "Nombre del Autor",
     "editorial": "Nombre de la Editorial",
     "publicationDate": 2024,
@@ -66,7 +67,7 @@ Controla el catálogo de libros, la descarga, estadísticas de visualizaciones y
 * **Cuerpo (Body)**:
   * `file`: Archivo PDF del libro (requerido).
   * `title`: string (opcional)
-  * `isbn`: número (opcional)
+  * `isbn`: string (opcional) - *Se limpia automáticamente en el backend quitando espacios y guiones*.
   * `author`: string (opcional) - *Puede ser el UUID del autor existente o el nombre del autor en texto plano*. Si es un nombre, el backend buscará coincidencia o creará un nuevo autor de forma automática.
   * `editorial`: string (opcional) - *Puede ser el UUID de la editorial existente o el nombre*. Se creará automáticamente si no existe.
   * `gender`: string (opcional) - *Puede ser el UUID del género o el nombre*. Se creará automáticamente si no existe.
@@ -87,7 +88,7 @@ Controla el catálogo de libros, la descarga, estadísticas de visualizaciones y
       {
         "id": "uuid-libro",
         "title": "Título",
-        "isbn": 978...,
+        "isbn": "978...",
         "author": "Nombre del Autor",
         "editorial": "Nombre de Editorial",
         "gender": "Género",
@@ -154,7 +155,7 @@ Controla el catálogo de libros, la descarga, estadísticas de visualizaciones y
 
 ## 👤 Módulo de Autenticación (`/auth`)
 
-Maneja el registro, inicio de sesión, verificación de sesión y recuperación de contraseña.
+Maneja el registro, inicio de sesión, verificación de sesión, renovación de tokens y recuperación de contraseña.
 
 ### 1. Registrar Usuario
 * **Ruta**: `POST /auth/register`
@@ -163,7 +164,7 @@ Maneja el registro, inicio de sesión, verificación de sesión y recuperación 
 * **Cuerpo (Body)**:
   * `name`: string (requerido)
   * `email`: string (requerido, debe pertenecer a un dominio permitido)
-  * `password`: string (requerido)
+  * `password`: string (requerido, mínimo 8 caracteres)
   * `profilePhoto`: Archivo de imagen (opcional)
 
 ### 2. Iniciar Sesión
@@ -177,12 +178,28 @@ Maneja el registro, inicio de sesión, verificación de sesión y recuperación 
 * **Acceso**: **[PÚBLICO]**
 * **Descripción**: Extrae el token de las cookies (`access-token`) o de la cabecera `Authorization` para verificar que la sesión sigue activa. Retorna los datos del usuario autenticado.
 
-### 4. Perfil de Usuario
+### 4. Refrescar Token de Acceso (Renovación de Sesión)
+* **Ruta**: `POST /auth/refresh`
+* **Acceso**: **[PÚBLICO]**
+* **Cuerpo (JSON / Cookies / Header)**: 
+  * Acepta `refreshToken` en el cuerpo del JSON (ej. `{ "refreshToken": "..." }`).
+  * Como fallback, busca la cookie `refresh-token`.
+  * Como segundo fallback, busca en el header `Authorization: Bearer <refresh_token>`.
+* **Descripción**: Permite renovar un token JWT vencido de manera transparente. El refresh token expira en 7 días.
+* **Respuesta**:
+  ```json
+  {
+    "access_token": "nuevo_token_de_acceso_jwt",
+    "refresh_token": "nuevo_token_de_refresco_hex"
+  }
+  ```
+
+### 5. Perfil de Usuario
 * **Ruta**: `GET /auth/profile`
 * **Acceso**: Protegido
 * **Respuesta**: Retorna los datos del usuario actualmente autenticado (obtenido del payload JWT).
 
-### 5. Cambiar Contraseña (Logueado)
+### 6. Cambiar Contraseña (Logueado)
 * **Ruta**: `POST /auth/change-password`
 * **Acceso**: Protegido
 * **Cuerpo (JSON)**:
@@ -193,13 +210,13 @@ Maneja el registro, inicio de sesión, verificación de sesión y recuperación 
   }
   ```
 
-### 6. Solicitar Recuperación de Contraseña
+### 7. Solicitar Recuperación de Contraseña
 * **Ruta**: `POST /auth/forgot-password`
 * **Acceso**: **[PÚBLICO]**
 * **Cuerpo (JSON)**: `{ "email": "usuario@dominio.com" }`
-* **Descripción**: Envía un correo electrónico con un enlace que contiene un token único para restablecer la contraseña.
+* **Descripción**: Envía un correo electrónico con un enlace que contiene un token único para restablecer la contraseña. Cuenta con un límite de peticiones controlado por tiempo para prevenir abusos.
 
-### 7. Restablecer Contraseña
+### 8. Restablecer Contraseña
 * **Ruta**: `POST /auth/reset-password`
 * **Acceso**: **[PÚBLICO]**
 * **Cuerpo (JSON)**:
@@ -339,27 +356,3 @@ Para subida directa de archivos ajenos al flujo estructurado de libros o usuario
 
 * **POST `/cloudinary/upload` [Protegido]**: Subir un archivo genérico (`multipart/form-data` con campo `file`). Retorna la URL segura y metadatos de Cloudinary.
 * **POST `/cloudinary/uploadProfilePhoto` [Protegido]**: Subir foto de perfil genérica (`multipart/form-data` con campo `profilePhoto`).
-
----
-
-## 🎯 Módulo de Recomendaciones (`/recommendations`)
-
-Sistema de recomendación de libros basado en los gustos y la interacción del usuario, además de listados de tendencias.
-
-### 1. Recomendaciones Personalizadas
-* **Ruta**: `GET /recommendations`
-* **Acceso**: Protegido
-* **Query Params**: `PaginationDto` (`page`, `limit`)
-* **Descripción**: Analiza los libros favoritos y reseñas positivas (>= 4 estrellas) del usuario actual, extrayendo géneros, autores y editoriales preferidos para buscar libros similares que el usuario aún no tenga en sus listas. Los resultados se ordenan por relevancia, visitas y calificación.
-
-### 2. Libros en Tendencia
-* **Ruta**: `GET /recommendations/trending`
-* **Acceso**: **[PÚBLICO]**
-* **Query Params**: `PaginationDto` (`page`, `limit`)
-* **Descripción**: Retorna una lista paginada de los libros más populares ordenados por la suma de visualizaciones y descargas, y como criterio secundario la calificación promedio.
-
-### 3. Libros Similares
-* **Ruta**: `GET /recommendations/similar/:bookId`
-* **Acceso**: **[PÚBLICO]**
-* **Query Params**: `PaginationDto` (`page`, `limit`)
-* **Descripción**: Busca libros que compartan el mismo género, autor o editorial que el libro objetivo especificado por `bookId`. Ordena los resultados por popularidad. Excluye al libro objetivo de los resultados.
