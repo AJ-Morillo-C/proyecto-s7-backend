@@ -16,7 +16,7 @@ export const DataSourceConfig: DataSourceOptions = databaseUrl
   ? {
     type: 'postgres',
     url: databaseUrl,
-    ssl: { rejectUnauthorized: false },
+    ssl: false,
     entities: [__dirname + './../../**/**/*.entity{.ts,.js}'],
     migrations: [__dirname + './../../migrations/*{.ts,.js}'],
     synchronize: false,
@@ -31,7 +31,7 @@ export const DataSourceConfig: DataSourceOptions = databaseUrl
     username: configService.get('POSTGRES_USER'),
     password: configService.get('POSTGRES_PASSWORD'),
     database: configService.get('POSTGRES_DB'),
-    ssl: { rejectUnauthorized: false },
+    ssl: false,
     entities: [__dirname + './../../**/**/*.entity{.ts,.js}'],
     migrations: [__dirname + './../../migrations/*{.ts,.js}'],
     synchronize: false,

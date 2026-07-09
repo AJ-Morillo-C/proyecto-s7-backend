@@ -10,6 +10,7 @@ import { ChangePasswordDto } from "./dto/change-password.dto";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import * as crypto from "crypto";
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,7 @@ export class AuthService {
   async register(
     registerAuthDto: RegisterAuthDto,
     file?: Express.Multer.File
-  ): Promise<{ user: OmitPassword; access_token: string }> {
+  ): Promise<{ user: OmitPassword; access_token: string; refresh_token: string }> {
     const { name, email, password } = registerAuthDto;
     try {
       const user = await this.usersService.create({ name, email, password }, file);
@@ -40,13 +41,22 @@ export class AuthService {
         });
       }
 
-      return { user: rest, access_token };
+      const refresh_token = crypto.randomBytes(40).toString("hex");
+      const refresh_token_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
+
+      await this.usersService.update(user.id, {
+        refreshToken: refresh_token,
+        refreshTokenExpiresAt: refresh_token_expires_at,
+      });
+
+      return { user: rest, access_token, refresh_token };
     } catch (error) {
-      ManagerError.createSignatureError(error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
     }
   }
 
-  async login(loginAuthDto: LoginAuthDto): Promise<{ user: OmitPassword; access_token: string }> {
+  async login(loginAuthDto: LoginAuthDto): Promise<{ user: OmitPassword; access_token: string; refresh_token: string }> {
     const { email, password } = loginAuthDto;
     try {
       const user = await this.usersService.findOneByEmail(email);
@@ -76,9 +86,19 @@ export class AuthService {
           message: "Internal server error",
         });
       }
-      return { user: rest, access_token };
+
+      const refresh_token = crypto.randomBytes(40).toString("hex");
+      const refresh_token_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
+
+      await this.usersService.update(user.id, {
+        refreshToken: refresh_token,
+        refreshTokenExpiresAt: refresh_token_expires_at,
+      });
+
+      return { user: rest, access_token, refresh_token };
     } catch (error) {
-      ManagerError.createSignatureError(error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
     }
   }
 
@@ -111,7 +131,8 @@ export class AuthService {
 
       return { message: "Password changed successfully" };
     } catch (error) {
-      ManagerError.createSignatureError(error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
     }
   }
 
@@ -119,13 +140,21 @@ export class AuthService {
     try {
       const { email } = forgotPasswordDto;
 
+      const checkLimit = await this.usersService.canRequestPasswordReset(email);
+      if (!checkLimit.canRequest) {
+        throw new ManagerError({
+          type: "TOO_MANY_REQUESTS",
+          message: checkLimit.message || "Exceeded request limit",
+        });
+      }
+
       const user = await this.usersService.findOneByEmail(email);
       if (!user) {
         return { message: "If an account with that email exists, a reset link has been sent" };
       }
 
-      // Generate reset token and expiry time
-      const resetToken = Math.random().toString(36).slice(2, 10).toUpperCase();
+      // Generate secure reset token and expiry time
+      const resetToken = crypto.randomBytes(4).toString("hex").toUpperCase();
       const resetTokenExpiry = new Date(Date.now() + 3600000);
 
       await this.usersService.update(user.id, {
@@ -150,8 +179,8 @@ export class AuthService {
 
       return { message: "If an account with that email exists, a reset link has been sent" };
     } catch (error) {
-      console.error("Error en forgotPassword:", error);
-      throw error;
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
     }
   }
 
@@ -177,7 +206,8 @@ export class AuthService {
 
       return { message: "Password reset successfully" };
     } catch (error) {
-      ManagerError.createSignatureError(error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
     }
   }
 
@@ -228,19 +258,34 @@ export class AuthService {
     }
   }
 
-  // async validateToken(token: string): Promise<UserEntity> {
-  //   try {
-  //     const decoded = this.jwtService.verify(token, { secret: process.env.JWT_SECRET })
-  //     const response = await this.usersService.findOne(decoded.id)
-  //     const user = response.data
+  async refresh(token: string): Promise<{ access_token: string; refresh_token: string }> {
+    try {
+      const user = await this.usersService.findOneByRefreshToken(token);
+      if (!user || !user.refreshTokenExpiresAt || user.refreshTokenExpiresAt < new Date()) {
+        throw new ManagerError({
+          type: "UNAUTHORIZED",
+          message: "Invalid or expired refresh token",
+        });
+      }
 
-  //     if (!user) {
-  //       throw new UnauthorizedException("Unauthorized")
-  //     }
+      const { password, ...rest } = user;
 
-  //     return user
-  //   } catch (error) {
-  //     throw new UnauthorizedException("Unauthorized")
-  //   }
-  // }
+      const access_token = this.jwtService.sign(rest, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const refresh_token = crypto.randomBytes(40).toString("hex");
+      const refresh_token_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
+
+      await this.usersService.update(user.id, {
+        refreshToken: refresh_token,
+        refreshTokenExpiresAt: refresh_token_expires_at,
+      });
+
+      return { access_token, refresh_token };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
+    }
+  }
 }

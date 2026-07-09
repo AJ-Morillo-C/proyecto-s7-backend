@@ -37,5 +37,11 @@ export class UserEntity extends BaseEntity {
   lastResetPasswordAttempt?: Date;
 
   @Column({ nullable: true })
+  refreshToken?: string;
+
+  @Column({ nullable: true, type: "timestamp" })
+  refreshTokenExpiresAt?: Date;
+
+  @Column({ nullable: true })
   profilePhoto: string;
 }

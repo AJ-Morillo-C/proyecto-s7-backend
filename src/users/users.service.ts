@@ -188,6 +188,18 @@ export class UsersService {
     }
   }
 
+  async findOneByRefreshToken(token: string): Promise<UserEntity | undefined> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { refreshToken: token, isActive: true },
+      });
+      return user;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      ManagerError.createSignatureError(message);
+    }
+  }
+
   async canRequestPasswordReset(email: string): Promise<{ canRequest: boolean; message?: string }> {
     const user = await this.userRepository.findOne({ where: { email } });
 

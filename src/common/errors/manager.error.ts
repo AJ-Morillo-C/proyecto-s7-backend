@@ -12,17 +12,19 @@ export class ManagerError extends Error {
   }
 
   static createSignatureError(message: string) {
-    const name = message.split(' :: ')[0];
-    const description = message.split(' :: ')[1];
+    const parts = message.split(' :: ');
+    const name = parts[0];
+    const description = parts[1];
 
-    if (name) {
+    if (name && HttpStatus[name as keyof typeof HttpStatus] !== undefined) {
+      const statusCode = HttpStatus[name as keyof typeof HttpStatus];
       throw new HttpException(
         {
           error: name,
-          statusCode: HttpStatus[name],
-          message: description,
+          statusCode: statusCode,
+          message: description || name,
         },
-        HttpStatus[name],
+        statusCode,
         {
           cause: new Error(message),
         },

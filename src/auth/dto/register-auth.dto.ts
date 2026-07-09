@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, MinLength } from 'class-validator';
 import { IsEmailWhitelistedDomain } from '../../common/validators/is-email-whitelisted-domain.validator';
 
 export class RegisterAuthDto {
@@ -13,5 +13,6 @@ export class RegisterAuthDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   password: string;
 }

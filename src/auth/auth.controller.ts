@@ -51,13 +51,21 @@ export class AuthController {
     return this.authService.verifyToken(token);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @PublicAccess()
+  @Post("refresh")
+  async refresh(@Req() req: Request, @Body("refreshToken") bodyRefreshToken?: string) {
+    const token = bodyRefreshToken || req.cookies["refresh-token"] || req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      throw new UnauthorizedException("Refresh token is required");
+    }
+    return this.authService.refresh(token);
+  }
+
   @Get("profile")
   getProfile(@CurrentUser() user: OmitPassword) {
     return user;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post("change-password")
   async changePassword(@CurrentUser() user: OmitPassword, @Body() changePasswordDto: ChangePasswordDto) {
     return this.authService.changePassword(user.id, changePasswordDto);

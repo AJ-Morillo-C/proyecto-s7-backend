@@ -16,6 +16,14 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @Exclude()
   password?: string;
 
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
+
+  @IsDate()
+  @IsOptional()
+  refreshTokenExpiresAt?: Date;
+
   @IsOptional()
   @IsEnum(UserRole, { message: "role must be either USER or ADMIN" })
   role?: UserRole;
