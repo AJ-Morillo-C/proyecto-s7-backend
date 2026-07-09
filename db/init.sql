@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS "user" (
     reset_token_expiry TIMESTAMP,
     reset_password_attempts INTEGER NOT NULL DEFAULT 0,
     last_reset_password_attempt TIMESTAMP,
+    refresh_token VARCHAR,
+    refresh_token_expires_at TIMESTAMP,
     profile_photo VARCHAR
 );
 
