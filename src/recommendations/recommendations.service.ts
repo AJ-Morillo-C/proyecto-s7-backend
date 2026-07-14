@@ -52,19 +52,22 @@ export class RecommendationsService {
     favorites.forEach((fav) => processBook(fav.book));
     positiveReviews.forEach((rev) => processBook(rev.book));
 
-    const qb = this.bookRepository.createQueryBuilder('book')
-      .leftJoinAndSelect('book.author', 'author')
-      .leftJoinAndSelect('book.editorial', 'editorial')
-      .leftJoinAndSelect('book.gender', 'gender')
-      .where('book.isActive = :isActive', { isActive: true });
-
-    if (interactedBookIds.size > 0) {
-      qb.andWhere('book.id NOT IN (:...interactedBookIds)', {
-        interactedBookIds: Array.from(interactedBookIds),
-      });
-    }
+    let data: BookEntity[] = [];
+    let total = 0;
 
     if (preferredGenders.size > 0 || preferredAuthors.size > 0 || preferredEditorials.size > 0) {
+      const qb = this.bookRepository.createQueryBuilder('book')
+        .leftJoinAndSelect('book.author', 'author')
+        .leftJoinAndSelect('book.editorial', 'editorial')
+        .leftJoinAndSelect('book.gender', 'gender')
+        .where('book.isActive = :isActive', { isActive: true });
+
+      if (interactedBookIds.size > 0) {
+        qb.andWhere('book.id NOT IN (:...interactedBookIds)', {
+          interactedBookIds: Array.from(interactedBookIds),
+        });
+      }
+
       qb.andWhere(
         new Brackets((qb2) => {
           if (preferredGenders.size > 0) {
@@ -84,16 +87,49 @@ export class RecommendationsService {
           }
         }),
       );
+
       qb.orderBy('book.views', 'DESC')
         .addOrderBy('book.downloads', 'DESC')
-        .addOrderBy('book.averageRating', 'DESC');
+        .addOrderBy('book.averageRating', 'DESC')
+        .skip(skip)
+        .take(limit);
+
+      const result = await qb.getManyAndCount();
+      data = result[0];
+      total = result[1];
     } else {
-      qb.orderBy('RANDOM()');
+      // If no preferences, pick random active books
+      const randomIdsQb = this.bookRepository.createQueryBuilder('book')
+        .select('book.id')
+        .where('book.isActive = :isActive', { isActive: true });
+
+      if (interactedBookIds.size > 0) {
+        randomIdsQb.andWhere('book.id NOT IN (:...interactedBookIds)', {
+          interactedBookIds: Array.from(interactedBookIds),
+        });
+      }
+
+      total = await randomIdsQb.getCount();
+
+      const randomBooks = await randomIdsQb
+        .orderBy('RANDOM()')
+        .limit(limit)
+        .getMany();
+
+      const randomIds = randomBooks.map((b) => b.id);
+
+      if (randomIds.length > 0) {
+        data = await this.bookRepository.createQueryBuilder('book')
+          .leftJoinAndSelect('book.author', 'author')
+          .leftJoinAndSelect('book.editorial', 'editorial')
+          .leftJoinAndSelect('book.gender', 'gender')
+          .where('book.id IN (:...randomIds)', { randomIds })
+          .getMany();
+
+        // Re-shuffle manually since IN clause doesn't preserve order
+        data = data.sort(() => Math.random() - 0.5);
+      }
     }
-
-    qb.skip(skip).take(limit);
-
-    const [data, total] = await qb.getManyAndCount();
 
     return {
       meta: {
