@@ -164,7 +164,7 @@ export class AuthService {
 
       await this.usersService.incrementResetPasswordAttempts(email);
 
-      const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`;
+      const resetUrl = `${process.env.RESET_PASSWORD_URL}?token=${resetToken}`;
 
       await this.mailerService.sendMail({
         to: email,

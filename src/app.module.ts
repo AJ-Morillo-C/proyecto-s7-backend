@@ -19,6 +19,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     ConfigModule.forRoot({
       envFilePath: `.env.${process.env.NODE_ENV.trim()}`,
       isGlobal: true,
+      expandVariables: true,
     }),
     TypeOrmModule.forRoot(DataSourceConfig),
     BooksModule,
