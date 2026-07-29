@@ -53,6 +53,8 @@ pids
 *.pid
 *.seed
 *.pid.lock
+*.backup
+*.dump
 
 # Folders
 /src/migrations/

@@ -1,13 +1,13 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
-import { ADMIN_KEY, PUBLIC_KEY, ROLES_KEY } from './../../common/constants/keys-roles.constant';
-import { UserRole } from './../../common/enums/user-role.enum';
-import { ManagerError } from './../../common/errors/manager.error';
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Request } from "express";
+import { ADMIN_KEY, PUBLIC_KEY, ROLES_KEY } from "./../../common/constants/keys-roles.constant";
+import { UserRole } from "./../../common/enums/user-role.enum";
+import { ManagerError } from "./../../common/errors/manager.error";
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) { }
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -26,13 +26,15 @@ export class RoleGuard implements CanActivate {
 
     try {
       if (isRoles === undefined) {
-        if (!isAdmin || user?.role === isAdmin) { // Verificación segura
+        if (!isAdmin || user?.role === isAdmin) {
+          // Verificación segura
           return true;
         }
         throw UNAUTHORIZED_ERROR;
       }
 
-      if (user?.role === UserRole.ADMIN) { // Verificación segura
+      if (user?.role === UserRole.ADMIN) {
+        // Verificación segura
         return true;
       }
 

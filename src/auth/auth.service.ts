@@ -56,7 +56,9 @@ export class AuthService {
     }
   }
 
-  async login(loginAuthDto: LoginAuthDto): Promise<{ user: OmitPassword; access_token: string; refresh_token: string }> {
+  async login(
+    loginAuthDto: LoginAuthDto
+  ): Promise<{ user: OmitPassword; access_token: string; refresh_token: string }> {
     const { email, password } = loginAuthDto;
     try {
       const user = await this.usersService.findOneByEmail(email);

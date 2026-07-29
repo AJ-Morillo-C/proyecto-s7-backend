@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PDFParse } from 'pdf-parse';
+import { Injectable, Logger } from "@nestjs/common";
+import { PDFParse } from "pdf-parse";
 
 export type PdfParseResult = {
   text: string;
@@ -24,12 +24,10 @@ export class PdfParserService {
         first: this.PAGE_LIMIT,
       });
 
-      const rawText = data.text || '';
-      
+      const rawText = data.text || "";
+
       // Limpiar texto: eliminar espacios duplicados y saltos de línea/tabulaciones innecesarias
-      const text = rawText
-        .replace(/\s+/g, ' ')
-        .trim();
+      const text = rawText.replace(/\s+/g, " ").trim();
 
       const pageCount = data.total || 0;
       const isScanned = text.length < this.MIN_TEXT_LENGTH;
@@ -38,15 +36,15 @@ export class PdfParserService {
 
       return { text, isScanned, pageCount };
     } catch (error) {
-      this.logger.error('Error parsing PDF with pdf-parse', error as any);
+      this.logger.error("Error parsing PDF with pdf-parse", error as any);
       // En caso de error, se retorna como escaneado para forzar el fallback de visión por IA
-      return { text: '', isScanned: true, pageCount: 0 };
+      return { text: "", isScanned: true, pageCount: 0 };
     } finally {
       if (parser) {
         try {
           await parser.destroy();
         } catch (destroyError) {
-          this.logger.warn('Failed to destroy PDFParse instance', destroyError as any);
+          this.logger.warn("Failed to destroy PDFParse instance", destroyError as any);
         }
       }
     }

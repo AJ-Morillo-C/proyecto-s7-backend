@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AiMetadataService } from './ai-metadata.service';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { AiMetadataService } from "./ai-metadata.service";
 
 @Module({
   imports: [ConfigModule],

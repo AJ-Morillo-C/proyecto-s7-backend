@@ -12,12 +12,7 @@ import { BooksUploadService } from "./books-upload.service";
 @Module({
   controllers: [BooksController, PdfTestController],
   providers: [BooksService, BooksUploadService],
-  imports: [
-    TypeOrmModule.forFeature([BookEntity]),
-    CloudinaryModule,
-    PdfParserModule,
-    AiMetadataModule,
-  ],
+  imports: [TypeOrmModule.forFeature([BookEntity]), CloudinaryModule, PdfParserModule, AiMetadataModule],
   exports: [BooksService, BooksUploadService],
 })
 export class BooksModule {}
