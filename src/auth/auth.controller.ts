@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
   Req,
   Get,
+  HttpCode,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -43,6 +44,7 @@ export class AuthController {
 
   @PublicAccess()
   @Post("verify")
+  @HttpCode(200)
   async verify(@Req() req: Request) {
     const token = req.cookies["access-token"] || req.headers.authorization?.split(" ")[1];
     if (!token) {

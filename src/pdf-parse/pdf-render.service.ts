@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { createCanvas, Canvas } from '@napi-rs/canvas';
+import { Injectable, Logger } from "@nestjs/common";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createCanvas, Canvas } from "@napi-rs/canvas";
 
 class NodeCanvasFactory {
   create(width: number, height: number) {
     const canvas: Canvas = createCanvas(Math.ceil(width), Math.ceil(height));
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     return { canvas, context };
   }
 
@@ -44,7 +44,7 @@ export class PdfRenderService {
     let pdfDoc: any = null;
     try {
       pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
-      if (!pdfDoc || pdfDoc.numPages < 1) throw new Error('PDF has no pages');
+      if (!pdfDoc || pdfDoc.numPages < 1) throw new Error("PDF has no pages");
 
       const page = await pdfDoc.getPage(1);
       const viewport = page.getViewport({ scale });
@@ -60,13 +60,13 @@ export class PdfRenderService {
 
       await page.render(renderContext).promise;
 
-      const pngBuffer = (canvas as any).toBuffer('image/png');
+      const pngBuffer = (canvas as any).toBuffer("image/png");
       return pngBuffer;
     } catch (err) {
-      this.logger.error('Error rendering PDF to PNG', err as any);
+      this.logger.error("Error rendering PDF to PNG", err as any);
       throw err;
     } finally {
-      if (pdfDoc && typeof pdfDoc.destroy === 'function') {
+      if (pdfDoc && typeof pdfDoc.destroy === "function") {
         try {
           await pdfDoc.destroy();
         } catch {}

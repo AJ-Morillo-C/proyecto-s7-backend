@@ -1,18 +1,12 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 export class ManagerError extends Error {
-  constructor({
-    type,
-    message,
-  }: {
-    type: keyof typeof HttpStatus;
-    message: string;
-  }) {
+  constructor({ type, message }: { type: keyof typeof HttpStatus; message: string }) {
     super(`${type} :: ${message}`);
   }
 
   static createSignatureError(message: string) {
-    const parts = message.split(' :: ');
+    const parts = message.split(" :: ");
     const name = parts[0];
     const description = parts[1];
 
@@ -27,7 +21,7 @@ export class ManagerError extends Error {
         statusCode,
         {
           cause: new Error(message),
-        },
+        }
       );
     }
 

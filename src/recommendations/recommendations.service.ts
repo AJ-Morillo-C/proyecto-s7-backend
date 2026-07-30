@@ -1,11 +1,11 @@
-import { Injectable, HttpStatus, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual, Brackets } from 'typeorm';
-import { BookEntity } from '../books/entities/book.entity';
-import { FavoriteEntity } from '../favorites/entities/favorite.entity';
-import { ReviewEntity } from '../reviews/entities/review.entity';
-import { PaginationDto } from '../common/dtos/pagination/pagination.dto';
-import { AllApiResponse } from '../common/interfaces/response-api.interface';
+import { Injectable, HttpStatus, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, MoreThanOrEqual, Brackets } from "typeorm";
+import { BookEntity } from "../books/entities/book.entity";
+import { FavoriteEntity } from "../favorites/entities/favorite.entity";
+import { ReviewEntity } from "../reviews/entities/review.entity";
+import { PaginationDto } from "../common/dtos/pagination/pagination.dto";
+import { AllApiResponse } from "../common/interfaces/response-api.interface";
 
 @Injectable()
 export class RecommendationsService {
@@ -15,12 +15,12 @@ export class RecommendationsService {
     @InjectRepository(FavoriteEntity)
     private readonly favoriteRepository: Repository<FavoriteEntity>,
     @InjectRepository(ReviewEntity)
-    private readonly reviewRepository: Repository<ReviewEntity>,
+    private readonly reviewRepository: Repository<ReviewEntity>
   ) {}
 
   async getPersonalizedRecommendations(
     userId: string,
-    paginationDto: PaginationDto,
+    paginationDto: PaginationDto
   ): Promise<AllApiResponse<BookEntity>> {
     const page = paginationDto.page || 1;
     const limit = paginationDto.limit || 10;
@@ -28,12 +28,12 @@ export class RecommendationsService {
 
     const favorites = await this.favoriteRepository.find({
       where: { user: { id: userId } },
-      relations: ['book', 'book.gender', 'book.author', 'book.editorial'],
+      relations: ["book", "book.gender", "book.author", "book.editorial"],
     });
 
     const positiveReviews = await this.reviewRepository.find({
       where: { user: { id: userId }, rating: MoreThanOrEqual(4) },
-      relations: ['book', 'book.gender', 'book.author', 'book.editorial'],
+      relations: ["book", "book.gender", "book.author", "book.editorial"],
     });
 
     const interactedBookIds = new Set<string>();
@@ -56,14 +56,15 @@ export class RecommendationsService {
     let total = 0;
 
     if (preferredGenders.size > 0 || preferredAuthors.size > 0 || preferredEditorials.size > 0) {
-      const qb = this.bookRepository.createQueryBuilder('book')
-        .leftJoinAndSelect('book.author', 'author')
-        .leftJoinAndSelect('book.editorial', 'editorial')
-        .leftJoinAndSelect('book.gender', 'gender')
-        .where('book.isActive = :isActive', { isActive: true });
+      const qb = this.bookRepository
+        .createQueryBuilder("book")
+        .leftJoinAndSelect("book.author", "author")
+        .leftJoinAndSelect("book.editorial", "editorial")
+        .leftJoinAndSelect("book.gender", "gender")
+        .where("book.isActive = :isActive", { isActive: true });
 
       if (interactedBookIds.size > 0) {
-        qb.andWhere('book.id NOT IN (:...interactedBookIds)', {
+        qb.andWhere("book.id NOT IN (:...interactedBookIds)", {
           interactedBookIds: Array.from(interactedBookIds),
         });
       }
@@ -71,26 +72,26 @@ export class RecommendationsService {
       qb.andWhere(
         new Brackets((qb2) => {
           if (preferredGenders.size > 0) {
-            qb2.orWhere('gender.id IN (:...preferredGenders)', {
+            qb2.orWhere("gender.id IN (:...preferredGenders)", {
               preferredGenders: Array.from(preferredGenders),
             });
           }
           if (preferredAuthors.size > 0) {
-            qb2.orWhere('author.id IN (:...preferredAuthors)', {
+            qb2.orWhere("author.id IN (:...preferredAuthors)", {
               preferredAuthors: Array.from(preferredAuthors),
             });
           }
           if (preferredEditorials.size > 0) {
-            qb2.orWhere('editorial.id IN (:...preferredEditorials)', {
+            qb2.orWhere("editorial.id IN (:...preferredEditorials)", {
               preferredEditorials: Array.from(preferredEditorials),
             });
           }
-        }),
+        })
       );
 
-      qb.orderBy('book.views', 'DESC')
-        .addOrderBy('book.downloads', 'DESC')
-        .addOrderBy('book.averageRating', 'DESC')
+      qb.orderBy("book.views", "DESC")
+        .addOrderBy("book.downloads", "DESC")
+        .addOrderBy("book.averageRating", "DESC")
         .skip(skip)
         .take(limit);
 
@@ -99,31 +100,30 @@ export class RecommendationsService {
       total = result[1];
     } else {
       // If no preferences, pick random active books
-      const randomIdsQb = this.bookRepository.createQueryBuilder('book')
-        .select('book.id')
-        .where('book.isActive = :isActive', { isActive: true });
+      const randomIdsQb = this.bookRepository
+        .createQueryBuilder("book")
+        .select("book.id")
+        .where("book.isActive = :isActive", { isActive: true });
 
       if (interactedBookIds.size > 0) {
-        randomIdsQb.andWhere('book.id NOT IN (:...interactedBookIds)', {
+        randomIdsQb.andWhere("book.id NOT IN (:...interactedBookIds)", {
           interactedBookIds: Array.from(interactedBookIds),
         });
       }
 
       total = await randomIdsQb.getCount();
 
-      const randomBooks = await randomIdsQb
-        .orderBy('RANDOM()')
-        .limit(limit)
-        .getMany();
+      const randomBooks = await randomIdsQb.orderBy("RANDOM()").limit(limit).getMany();
 
       const randomIds = randomBooks.map((b) => b.id);
 
       if (randomIds.length > 0) {
-        data = await this.bookRepository.createQueryBuilder('book')
-          .leftJoinAndSelect('book.author', 'author')
-          .leftJoinAndSelect('book.editorial', 'editorial')
-          .leftJoinAndSelect('book.gender', 'gender')
-          .where('book.id IN (:...randomIds)', { randomIds })
+        data = await this.bookRepository
+          .createQueryBuilder("book")
+          .leftJoinAndSelect("book.author", "author")
+          .leftJoinAndSelect("book.editorial", "editorial")
+          .leftJoinAndSelect("book.gender", "gender")
+          .where("book.id IN (:...randomIds)", { randomIds })
           .getMany();
 
         // Re-shuffle manually since IN clause doesn't preserve order
@@ -139,7 +139,7 @@ export class RecommendationsService {
         total,
       },
       status: {
-        statusMsg: 'OK',
+        statusMsg: "OK",
         statusCode: HttpStatus.OK,
         error: null,
       },
@@ -147,21 +147,20 @@ export class RecommendationsService {
     };
   }
 
-  async getTrendingRecommendations(
-    paginationDto: PaginationDto,
-  ): Promise<AllApiResponse<BookEntity>> {
+  async getTrendingRecommendations(paginationDto: PaginationDto): Promise<AllApiResponse<BookEntity>> {
     const page = paginationDto.page || 1;
     const limit = paginationDto.limit || 10;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.bookRepository.createQueryBuilder('book')
-      .leftJoinAndSelect('book.author', 'author')
-      .leftJoinAndSelect('book.editorial', 'editorial')
-      .leftJoinAndSelect('book.gender', 'gender')
-      .where('book.isActive = :isActive', { isActive: true })
-      .orderBy('book.views', 'DESC')
-      .addOrderBy('book.downloads', 'DESC')
-      .addOrderBy('book.averageRating', 'DESC')
+    const [data, total] = await this.bookRepository
+      .createQueryBuilder("book")
+      .leftJoinAndSelect("book.author", "author")
+      .leftJoinAndSelect("book.editorial", "editorial")
+      .leftJoinAndSelect("book.gender", "gender")
+      .where("book.isActive = :isActive", { isActive: true })
+      .orderBy("book.views", "DESC")
+      .addOrderBy("book.downloads", "DESC")
+      .addOrderBy("book.averageRating", "DESC")
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -174,7 +173,7 @@ export class RecommendationsService {
         total,
       },
       status: {
-        statusMsg: 'OK',
+        statusMsg: "OK",
         statusCode: HttpStatus.OK,
         error: null,
       },
@@ -182,49 +181,47 @@ export class RecommendationsService {
     };
   }
 
-  async getSimilarBooks(
-    bookId: string,
-    paginationDto: PaginationDto,
-  ): Promise<AllApiResponse<BookEntity>> {
+  async getSimilarBooks(bookId: string, paginationDto: PaginationDto): Promise<AllApiResponse<BookEntity>> {
     const page = paginationDto.page || 1;
     const limit = paginationDto.limit || 10;
     const skip = (page - 1) * limit;
 
     const targetBook = await this.bookRepository.findOne({
       where: { id: bookId },
-      relations: ['gender', 'author', 'editorial'],
+      relations: ["gender", "author", "editorial"],
     });
 
     if (!targetBook) {
-      throw new NotFoundException('Book not found');
+      throw new NotFoundException("Book not found");
     }
 
-    const qb = this.bookRepository.createQueryBuilder('book')
-      .leftJoinAndSelect('book.author', 'author')
-      .leftJoinAndSelect('book.editorial', 'editorial')
-      .leftJoinAndSelect('book.gender', 'gender')
-      .where('book.isActive = :isActive', { isActive: true })
-      .andWhere('book.id != :bookId', { bookId });
+    const qb = this.bookRepository
+      .createQueryBuilder("book")
+      .leftJoinAndSelect("book.author", "author")
+      .leftJoinAndSelect("book.editorial", "editorial")
+      .leftJoinAndSelect("book.gender", "gender")
+      .where("book.isActive = :isActive", { isActive: true })
+      .andWhere("book.id != :bookId", { bookId });
 
     if (targetBook.gender || targetBook.author || targetBook.editorial) {
       qb.andWhere(
         new Brackets((qb2) => {
           if (targetBook.gender) {
-            qb2.orWhere('gender.id = :genderId', { genderId: targetBook.gender.id });
+            qb2.orWhere("gender.id = :genderId", { genderId: targetBook.gender.id });
           }
           if (targetBook.author) {
-            qb2.orWhere('author.id = :authorId', { authorId: targetBook.author.id });
+            qb2.orWhere("author.id = :authorId", { authorId: targetBook.author.id });
           }
           if (targetBook.editorial) {
-            qb2.orWhere('editorial.id = :editorialId', { editorialId: targetBook.editorial.id });
+            qb2.orWhere("editorial.id = :editorialId", { editorialId: targetBook.editorial.id });
           }
-        }),
+        })
       );
     }
 
-    qb.orderBy('book.views', 'DESC')
-      .addOrderBy('book.downloads', 'DESC')
-      .addOrderBy('book.averageRating', 'DESC')
+    qb.orderBy("book.views", "DESC")
+      .addOrderBy("book.downloads", "DESC")
+      .addOrderBy("book.averageRating", "DESC")
       .skip(skip)
       .take(limit);
 
@@ -238,7 +235,7 @@ export class RecommendationsService {
         total,
       },
       status: {
-        statusMsg: 'OK',
+        statusMsg: "OK",
         statusCode: HttpStatus.OK,
         error: null,
       },

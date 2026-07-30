@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString, IsEmail, MinLength } from 'class-validator';
-import { IsEmailWhitelistedDomain } from '../../common/validators/is-email-whitelisted-domain.validator';
+import { IsNotEmpty, IsString, IsEmail, MinLength } from "class-validator";
+import { IsEmailWhitelistedDomain } from "../../common/validators/is-email-whitelisted-domain.validator";
 
 export class RegisterAuthDto {
   @IsString()

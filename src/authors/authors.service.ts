@@ -10,6 +10,10 @@ import { AllApiResponse, OneApiResponse } from "../common/interfaces/response-ap
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { BooksService } from "../books/books.service";
 
+type AuthorWithBooksCount = AuthorEntity & {
+  booksCount: number;
+};
+
 @Injectable()
 export class AuthorsService {
   constructor(
@@ -83,13 +87,25 @@ export class AuthorsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<AllApiResponse<AuthorEntity>> {
+  async findAll(paginationDto: PaginationDto): Promise<AllApiResponse<AuthorWithBooksCount>> {
     const { limit, page } = paginationDto;
     const skip = (page - 1) * limit;
     try {
       const [total, data] = await Promise.all([
         this.authorsRepository.count({ where: { isActive: true } }),
-        this.authorsRepository.createQueryBuilder("author").where({ isActive: true }).take(limit).skip(skip).getMany(),
+        this.authorsRepository
+          .createQueryBuilder("author")
+          .where("author.isActive = true")
+          .loadRelationCountAndMap(
+            "author.booksCount",
+            "author.books",
+            "activeBook",
+            (queryBuilder) => queryBuilder.andWhere("activeBook.isActive = true")
+          )
+          .orderBy("author.createdAt", "DESC")
+          .take(limit)
+          .skip(skip)
+          .getMany(),
       ]);
 
       const lastPage = Math.ceil(total / limit);
@@ -105,7 +121,7 @@ export class AuthorsService {
           lastPage,
           total,
         },
-        data,
+        data: data as AuthorWithBooksCount[],
       };
     } catch (error) {
       ManagerError.createSignatureError(error.message);
@@ -117,7 +133,7 @@ export class AuthorsService {
     try {
       const authorsWithCount = await this.authorsRepository
         .createQueryBuilder("author")
-        .leftJoin("author.books", "book")
+        .leftJoin("author.books", "book", "book.isActive = true")
         .where("author.isActive = true")
         .select([
           "author.id AS id",
@@ -127,6 +143,7 @@ export class AuthorsService {
           "COUNT(book.id)::int AS booksCount",
         ])
         .groupBy("author.id")
+        .having("COUNT(book.id) > 0")
         .orderBy("booksCount", "DESC")
         .limit(limit)
         .getRawMany();

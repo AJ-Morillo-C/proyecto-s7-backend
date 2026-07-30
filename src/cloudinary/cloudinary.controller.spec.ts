@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CloudinaryController } from './cloudinary.controller';
+import { Test, TestingModule } from "@nestjs/testing";
+import { CloudinaryController } from "./cloudinary.controller";
 
-describe('CloudinaryController', () => {
+describe("CloudinaryController", () => {
   let controller: CloudinaryController;
 
   beforeEach(async () => {
@@ -12,7 +12,7 @@ describe('CloudinaryController', () => {
     controller = module.get<CloudinaryController>(CloudinaryController);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(controller).toBeDefined();
   });
 });

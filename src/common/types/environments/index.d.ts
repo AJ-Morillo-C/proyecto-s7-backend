@@ -2,7 +2,7 @@ declare namespace NodeJS {
   export interface ProcessEnv {
     // App Config
     PORT: string;
-    NODE_ENV: 'development' | 'production' | 'test';
+    NODE_ENV: "development" | "production" | "test";
     APP_URL: string;
 
     // Database Config
